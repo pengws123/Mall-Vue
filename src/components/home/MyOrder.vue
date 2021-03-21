@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Table border :columns="columns" :data="order" size="large" no-data-text="你还有订单，快点去购物吧"></Table>
+    <Table border :columns="columns" :data="datas" size="large" no-data-text="你还有订单，快点去购物吧"></Table>
     <div class="page-size">
       <Page :total="100" show-sizer></Page>
     </div>
@@ -12,6 +12,7 @@ export default {
   name: 'MyOrder',
   data () {
     return {
+      datas:[],
       order: [{
         order_id: 1529931938150,
         goods_id: 1529931938150,
@@ -37,6 +38,7 @@ export default {
             return h('div', [
               h('img', {
                 attrs: {
+                  width:50,
                   src: params.row.img
                 }
               })
@@ -75,7 +77,12 @@ export default {
         }
       ]
     };
-  }
+  },
+  created(){
+    this.$ajax.post("http://localhost:20001/feigon/shop/getAttrByIdAll").then(rs=> {
+      this.datas=rs.data.data
+    })
+  },
 };
 </script>
 

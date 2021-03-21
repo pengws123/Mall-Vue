@@ -44,6 +44,10 @@ export default {
         username: '',
         password: ''
       },
+      formDat: {
+        username: '',
+        password: ''
+      },
       ruleInline: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -60,17 +64,22 @@ export default {
     ...mapActions(['login']),
     handleSubmit (name) {
       const father = this;
-      console.log(this.formDate.username);
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.login(father.formDate).then(result => {
-            if (result) {
+          this.$ajax.post("http://localhost:20001/feigon/user/logen",this.$qs.stringify(this.formDate)).then(res=>{
+            if(res.data.data.mage==1) {
               this.$Message.success('登录成功');
+              //window.localStorage.setItem("user",JSON.stringify({"username":this.formDate.username,"token":res.data.data.data}));
+             this.formDat ={"username":this.formDate.username,"token":res.data.data.data};
+              this.login(father.formDat);
+           // window.sessionStorage.setItem("name",this.formDate.username);
+            // this.$store.state.userInfo.username=window.sessionStorage.getItem("name");
+
               father.$router.push('/');
-            } else {
+            }else{
               this.$Message.error('用户名或密码错误');
             }
-          });
+          })
         } else {
           this.$Message.error('请填写正确的用户名或密码');
         }

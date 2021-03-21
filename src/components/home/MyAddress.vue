@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="address-box" v-for="(item, index) in address" :key="index">
+    <div class="address-box" v-for="(item, index) in arrdata" :key="index">
       <div class="address-header">
         <span>{{item.name}}</span>
         <div class="address-action">
           <span @click="edit(index)"><Icon type="edit"></Icon> 修改</span>
-          <span @click="del(index)"><Icon type="trash-a"></Icon> 删除</span>
+          <span @click="del(item.id)"><Icon type="trash-a"></Icon> 删除</span>
         </div>
       </div>
       <div class="address-content">
@@ -56,6 +56,7 @@ export default {
     return {
       modal: false,
       formData: {
+        id:'',
         name: '',
         address: '',
         phone: '',
@@ -64,6 +65,7 @@ export default {
         city: '广州市',
         area: '天河区'
       },
+      arrdata:[],
       ruleInline: {
         name: [
           { required: true, message: '请输入姓名', trigger: 'blur' }
@@ -89,32 +91,70 @@ export default {
   },
   methods: {
     ...mapActions(['loadAddress']),
+    getProvince (data) {
+      this.formData.province = data.value;
+    },
+    getCity (data) {
+      this.formData.city = data.value;
+    },
+    getArea (data) {
+      this.formData.area = data.value;
+    },
     edit (index) {
       this.modal = true;
-      this.formData.province = this.address[index].province;
-      this.formData.city = this.address[index].city;
-      this.formData.area = this.address[index].area;
-      this.formData.address = this.address[index].address;
-      this.formData.name = this.address[index].name;
-      this.formData.phone = this.address[index].phone;
-      this.formData.postalcode = this.address[index].postalcode;
+      this.formData.province = this.arrdata[index].province;
+      this.formData.city = this.arrdata[index].city;
+      this.formData.area = this.arrdata[index].area;
+      this.formData.address = this.arrdata[index].address;
+      this.formData.name = this.arrdata[index].name;
+      this.formData.phone = this.arrdata[index].phone;
+      this.formData.postalcode = this.arrdata[index].postalcode;
+      this.formData.id = this.arrdata[index].id;
+      console.log(this.formData);
     },
     editAction () {
-      this.modal = false;
-      this.$Message.success('修改成功');
+      this.$ajax.post("http://localhost:20001/feigon/addres/updateaddres",this.$qs.stringify(this.formData)).then(res=>{
+        console.log(res);
+        if(res.data.code==200){
+          this.modal = false;
+          this.$Message.success('修改成功');
+          this.getqueryAll();
+        }
+      })
+
     },
     del (index) {
+      console.log(index);
       this.$Modal.confirm({
         title: '信息提醒',
         content: '你确定删除这个收货地址',
         onOk: () => {
+      this.$ajax.post("http://localhost:20001/feigon/addres/delAddresById?id="+index).then(res=>{
+        if(res.data.data.code==200){
           this.$Message.success('删除成功');
+          this.getqueryAll();
+      }
+          })
         },
         onCancel: () => {
           this.$Message.info('取消删除');
         }
       });
+    },
+    getqueryAll(){
+      let user=sessionStorage.getItem('loginInfo');
+      let userid=JSON.parse(user).username;
+      this.$ajax.post("http://localhost:20001/feigon/addres/queryByUserId?userid="+userid).then(res=>{
+
+        if(res.data.data.code==200){
+          this.arrdata=res.data.data.data;
+        }
+      })
     }
+  },
+
+  created(){
+   this.getqueryAll();
   },
   components: {
     Distpicker

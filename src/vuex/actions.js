@@ -37,7 +37,7 @@ export const loadSeckillsInfo = ({ commit }) => {
     const hours = date.getHours();
     const minute = date.getMinutes();
     const seconds = date.getSeconds();
-    console.log([hours, minute, seconds]);
+    //console.log([hours, minute, seconds]);
     // 距离开始秒杀时间
     const deadline = {
       hours: 1,
@@ -708,32 +708,31 @@ export const loadShoppingCart = ({ commit }) => {
 // 添加注册用户
 export const addSignUpUser = ({ commit }, data) => {
   return new Promise((resolve, reject) => {
-    const userArr = localStorage.getItem('users');
+    const userArr = sessionStorage.getItem('users');
     let users = [];
     if (userArr) {
       users = JSON.parse(userArr);
     }
     users.push(data);
-    localStorage.setItem('users', JSON.stringify(users));
+    sessionStorage.setItem('users', JSON.stringify(users));
   });
 };
 
 // 用户登录
 export const login = ({ commit }, data) => {
   return new Promise((resolve, reject) => {
-    if (data.username === 'Gavin' && data.password === '123456') {
-      localStorage.setItem('loginInfo', JSON.stringify(data));
+    if (data.username !== '' && data.password !== '') {
+      sessionStorage.setItem('loginInfo', JSON.stringify(data));
       commit('SET_USER_LOGIN_INFO', data);
       resolve(true);
       return true;
     }
-    const userArr = localStorage.getItem('users');
-    console.log(userArr);
+    const userArr = sessionStorage.getItem('users');
     if (userArr) {
       const users = JSON.parse(userArr);
       for (const item of users) {
         if (item.username === data.username) {
-          localStorage.setItem('loginInfo', JSON.stringify(item));
+          sessionStorage.setItem('loginInfo', JSON.stringify(item));
           commit('SET_USER_LOGIN_INFO', item);
           resolve(true);
           break;
@@ -747,13 +746,13 @@ export const login = ({ commit }, data) => {
 
 // 退出登陆
 export const signOut = ({ commit }) => {
-  localStorage.removeItem('loginInfo');
+  sessionStorage.removeItem('loginInfo');
   commit('SET_USER_LOGIN_INFO', {});
 };
 
 // 判断是否登陆
 export const isLogin = ({ commit }) => {
-  const user = localStorage.getItem('loginInfo');
+  const user = sessionStorage.getItem('loginInfo');
   if (user) {
     commit('SET_USER_LOGIN_INFO', JSON.parse(user));
   }

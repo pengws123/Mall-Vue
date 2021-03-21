@@ -10,8 +10,13 @@
     <div class="nav-body">
       <!-- 侧边导航 -->
       <div class="nav-side" ref="navSide">
-        <ul>
-          <li @mouseenter="showDetail(1)" @mouseleave="hideDetail(1)">
+
+          <ul>
+            <li v-for="type of typeData1" @mouseenter="showDetail(type.id)" @mouseleave="hideDetail(type.id)">
+              <span class="nav-side-item">{{type.name}}</span>
+            </li>
+
+          <!--<li @mouseenter="showDetail(1)" @mouseleave="hideDetail(1)">
             <span class="nav-side-item">家用电器</span>
           </li>
           <li @mouseenter="showDetail(2)" @mouseleave="hideDetail(2)">
@@ -76,7 +81,7 @@
             <span class="nav-side-item">图书</span> /
             <span class="nav-side-item">音像</span> /
             <span class="nav-side-item">电子书</span>
-          </li>
+          </li>-->
         </ul>
       </div>
       <div class="nav-content">
@@ -99,13 +104,13 @@
         </div>
       </div>
     </div>
-    <transition name="fade">
-      <div class="detail-item-panel panel-1" :duration="{ enter: 100, leave: 100 }" v-show="panel1" @mouseenter="showDetail(1)" ref="itemPanel1" @mouseleave="hideDetail(1)">
+    <!--<transition name="fade">
+      <div class="detail-item-panel panel-1" :duration="{ enter: 100, leave: 100 }" v-show="panel" @mouseenter="showDetail(1)" ref="itemPanel1" @mouseleave="hideDetail(1)">
         <div class="nav-detail-item">
-          <span v-for="(item, index) in panelData1.navTags" :key="index">{{item}} > </span>
+          <span v-for="(item, index) in paneData.navTags" :key="index">{{item}} > </span>
         </div>
         <ul>
-          <li v-for="(items, index) in panelData1.classNav" :key="index" class="detail-item-row">
+          <li v-for="(items, index) in paneData.classNav" :key="index" class="detail-item-row">
             <span class="detail-item-title">{{items.title}}
               <span class="glyphicon glyphicon-menu-right"></span>
             </span>
@@ -115,9 +120,9 @@
           </li>
         </ul>
       </div>
-    </transition>
+    </transition>-->
     <transition name="fade">
-      <div class="detail-item-panel panel-2" :duration="{ enter: 100, leave: 100 }" v-show="panel2" @mouseenter="showDetail(2)" ref="itemPanel2" @mouseleave="hideDetail(2)">
+      <div class="detail-item-panel panel-2" :duration="{ enter: 100, leave: 100 }" v-show="panel2" @mouseenter="showDetail()" ref="itemPanel2" @mouseleave="hideDetail()">
         <div class="nav-detail-item">
           <span v-for="(item, index) in panelData2.navTags" :key="index">{{item}} > </span>
         </div>
@@ -126,8 +131,8 @@
             <span class="detail-item-title">{{items.title}}
               <span class="glyphicon glyphicon-menu-right"></span>
             </span>
-            <router-link to="/goodsList" v-for="(item, subIndex) in items.tags" :key="subIndex">
-              <span class="detail-item">{{item}}</span>
+            <router-link :to="{path:'/goodsList', query:{ tid:item.id}}" v-for="(item, subIndex) in items.tags" :key="subIndex">
+              <span class="detail-item">{{item.name}}</span>
             </router-link>
           </li>
         </ul>
@@ -145,6 +150,13 @@ export default {
     return {
       panel1: false,
       panel2: false,
+      panel:false,
+      paneData:{
+        navTags:[],
+        classNav:[],
+      },
+      typeData:[],  //所有分类数据
+      typeData1:[], //左侧分类导航栏数据
       nav: [
         '秒杀',
         '优惠券',
@@ -260,14 +272,78 @@ export default {
     ...mapState(['marketing'])
   },
   methods: {
-    showDetail (index) {
+  /*  showDetail (index) {
       index === 1 ? (this.panel1 = true) : (this.panel2 = true);
     },
     hideDetail (index) {
       index === 1 ? (this.panel1 = false) : (this.panel2 = false);
+    },*/
+    showDetail (index) {
+
+      if (index != null){
+
+        let data= this.typeData;
+        let arr=[];
+        for (let i = 0; i < data.length; i++) {
+          let type = data[i];
+          let childType= {};
+          if (type.pid == index){
+
+          childType.title=type.name;
+
+            let angs=[];
+            for (let j = 0; j <data.length ; j++) {
+              if(data[j].pid==type.id){
+                angs.push(data[j]);
+              }
+            }
+          childType.tags=angs;
+          arr.push(childType);
+
+          } ;
+        }
+        this.panelData2.classNav=arr;
+      //   this.paneData.classNav = [];
+      //   for (let i = 0; i < childType.length ; i++) {
+      //     let type = childType[i];
+      //     let jsonData = {};
+      //     jsonData.title = type.name;
+      //     jsonData.tags = [];
+      //     for (let j = 0; j <data.length ; j++) {
+      //       if (data[j].pid == type.id){
+      //         jsonData.tags.push(data[j].name)
+      //       }
+      //     }
+      //     this.paneData.classNav.push(jsonData);
+      //   }
+      } ;
+      this.panel2 = true;
+      //index === 1 ? (this.panel1 = true) : (this.panel2 = true);
+    },
+    hideDetail (index) {
+
+      this.panel2 = false;
+      //index === 1 ? (this.panel1 = false) : (this.panel2 = false);
+    },
+
+    type(){
+      this.$ajax.post("http://localhost:20001/feigon/type/getTypes").then(rs=>{
+        if (rs.data.data.code == 200){
+          this.typeData = rs.data.data.data;
+          let data = rs.data.data.data;
+          for (let i = 0; i < data.length ; i++) {
+            let t = data[i];
+            if (t.pid==1){
+              this.typeData1.push(t);
+            } ;
+          }
+
+        } ;
+
+      }).catch();
     }
   },
-  mounted () {
+/*  mounted () {
     this.$refs.itemPanel1.style.left =
       this.$refs.navSide.offsetLeft + this.$refs.navSide.offsetWidth + 'px';
     this.$refs.itemPanel2.style.left =
@@ -282,8 +358,11 @@ export default {
       this.$refs.navSide.offsetLeft + this.$refs.navSide.offsetWidth + 'px';
     this.$refs.itemPanel1.style.top = this.$refs.navSide.offsetTop + 'px';
     this.$refs.itemPanel2.style.top = this.$refs.navSide.offsetTop + 'px';
-  },
-  store
+  },*/
+  store,
+    created(){
+  this.type();
+}
 };
 </script>
 

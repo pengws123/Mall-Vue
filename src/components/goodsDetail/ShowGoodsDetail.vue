@@ -34,7 +34,7 @@
                 <span>规格参数</span>
               </div>
               <div class="item-param-container">
-                <span class="item-param-box" v-for="(item,index) in goodsInfo.param" :key="index">
+                <span class="item-param-box" v-for="(item,index) in SKU1" :key="index">
                   <span class="item-param-title">{{item.title}}: </span>
                   <span class="item-param-content">{{item.content}}</span>
                 </span>
@@ -101,6 +101,9 @@ export default {
   name: 'ShowGoodsDetail',
   data () {
     return {
+      AttrValeu:[],
+      Attr:[],
+      SKU1:[],
       tagsColor: [ 'blue', 'green', 'red', 'yellow' ]
     };
   },
@@ -110,14 +113,47 @@ export default {
   methods: {
     changeHeight () {
       let heightCss = window.getComputedStyle(this.$refs.itemIntroGoods).height;
-      console.log(heightCss);
       heightCss = parseInt(heightCss.substr(0, heightCss.length - 2)) + 89;
       this.$refs.itemIntroDetail.style.height = heightCss + 'px';
-    }
+    },
+
+
+  /*  queryAttrDate(){
+      this.$ajax.post("http://localhost:20001/feigon/shop/selectAttrByIdAll?id="+this.id).then(rs=>{
+        if(rs.data.data.code==200){
+          this.AttrValeu=rs.data.data.data.Attrvalue;
+          this.Attr=rs.data.data.data.list;
+          this.shop=rs.data.data.data.shop;
+          //this.id=rs.data.list.typeid;
+          //console.log(this.AttrValeu);
+          //console.log(this.shop);
+          this.SKU();
+        }
+
+      })
+    },
+    SKU(){
+      let arr=[];
+      let attrData={}
+      for (let i = 0; i <this.Attr.length ; i++) {
+        if(this.Attr[i].isSKU==2){
+          arr.push({nameCH:this.Attr[i].nameCH,value:[],values:""})
+          for (let j = 0; j <this.AttrValeu.length; j++) {
+            attrData=JSON.parse(this.AttrValeu[j].attrData)
+            if(this.AttrValeu[j].storcks!=null & attrData[this.Attr[i].name]!=undefined){
+              if((arr[i].value).indexOf(attrData[this.Attr[i].name])===-1){
+                arr[j].value.push(attrData[this.Attr[i].name])
+              }
+            }
+          }
+        }
+      }
+      this.SKU1=arr
+    }*/
   },
   updated () {
     this.$nextTick(() => {
-      setTimeout(this.changeHeight, 100);
+    /*  setTimeout(this.changeHeight, 100);
       setTimeout(this.changeHeight, 1000);
       setTimeout(this.changeHeight, 3000);
       setTimeout(this.changeHeight, 5000);
@@ -126,8 +162,19 @@ export default {
       setTimeout(this.changeHeight, 20000);
       setTimeout(this.changeHeight, 25000);
       setTimeout(this.changeHeight, 30000);
-      setTimeout(this.changeHeight, 50000);
+      setTimeout(this.changeHeight, 50000);*/
     });
+  },
+  created () {
+    this.id=this.$route.query.id;
+    this.$ajax.post("http://localhost:20001/feigon/shop/selectAttrvalueIsSku?id=" + this.$route.query.id).then(rs => {
+      if (rs.data.code == 200) {
+        this.SKU1=rs.data.data;
+
+      }
+    })
+    this.queryAttrDate();
+
   },
   components: {
     ShowProductWarranty

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Table border ref="selection" :columns="columns" :data="shoppingCart" size="large" no-data-text="您的购物车没有商品，请先添加商品到购物车再点击购买"></Table>
+    <Table border ref="selection" :columns="columns" :data="datas" size="large" no-data-text="您的购物车没有商品，请先添加商品到购物车再点击购买"></Table>
     <div class="go-to">
       <Button @click="goTo" type="primary">去付款</Button>
     </div>
@@ -14,6 +14,7 @@ export default {
   name: 'MyShoppingCart',
   data () {
     return {
+      datas:[],
       columns: [
         {
           type: 'selection',
@@ -28,6 +29,7 @@ export default {
             return h('div', [
               h('img', {
                 attrs: {
+                  width:50,
                   src: params.row.img
                 }
               })
@@ -63,6 +65,9 @@ export default {
   },
   created () {
     this.loadShoppingCart();
+    this.$ajax.post("http://localhost:20001/feigon/shop/getAttrByIdAll").then(rs=> {
+      this.datas=rs.data.data
+    })
   },
   computed: {
     ...mapState(['shoppingCart'])

@@ -1,11 +1,11 @@
 <template>
   <div class="info-form">
      <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80" >
-        <FormItem label="用户名" prop="name">
-            <i-input v-model="formValidate.name" clearable size="large" placeholder="请输入你的姓名"></i-input>
+        <FormItem label="用户名" prop="username">
+            <i-input v-model="formValidate.username" clearable size="large" placeholder="请输入你的姓名"></i-input>
         </FormItem>
-        <FormItem label="邮箱" prop="mail">
-            <i-input v-model="formValidate.mail" clearable size="large" placeholder="请输入你的邮箱"></i-input>
+        <FormItem label="邮箱" prop="email">
+            <i-input v-model="formValidate.email" clearable size="large" placeholder="请输入你的邮箱"></i-input>
         </FormItem>
         <FormItem label="密码" prop="password">
             <i-input type="password" v-model="formValidate.password" clearable size="large" placeholder="请输入你的密码"></i-input>
@@ -35,16 +35,16 @@ export default {
     };
     return {
       formValidate: {
-        name: '',
-        mail: '',
+        username: '',
+        email: '',
         password: '',
         repassword: ''
       },
       ruleValidate: {
-        name: [
+        username: [
           { required: true, message: '用户名不能为空', trigger: 'blur' }
         ],
-        mail: [
+        email: [
           { required: true, message: '邮箱不能为空', trigger: 'blur' },
           { type: 'email', message: '邮箱格式错误', trigger: 'blur' }
         ],
@@ -61,20 +61,34 @@ export default {
   methods: {
     ...mapMutations(['SET_SIGN_UP_SETP']),
     ...mapActions(['addSignUpUser']),
-    handleSubmit (name) {
+    handleSubmit (username) {
       const father = this;
-      this.$refs[name].validate((valid) => {
+      this.$refs[username].validate((valid) => {
         if (valid) {
-          this.$Message.success('注册成功');
           const userinfo = {
-            username: this.formValidate.name,
+            username: this.formValidate.username,
             password: this.formValidate.password,
-            mail: this.formValidate.mail,
+            email: this.formValidate.email,
+            phone: this.$route.query.phone
+          };
+          const userinf = {
+            'name': this.formValidate.username,
+            password: this.formValidate.password,
+            email: this.formValidate.email,
             phone: this.$route.query.phone
           };
           this.addSignUpUser(userinfo);
-          father.SET_SIGN_UP_SETP(2);
-          this.$router.push({ path: '/SignUp/signUpDone' });
+          this.$ajax.post("http://localhost:20001/feigon/user/insertuser",this.$qs.stringify(userinf)).then(res=>{
+            if(res.data.data.data.mage==1) {
+              this.$Message.success('注册成功');
+              father.SET_SIGN_UP_SETP(2);
+
+              this.$router.push({ path: '/SignUp/signUpDone' });
+            }
+            if(res.data.data.data.mage==2) {
+              this.$Message.error('用户已存在');
+            }
+          })
         } else {
           this.$Message.error('注册失败');
         }

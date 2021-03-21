@@ -8,7 +8,7 @@
         <Icon type="ios-lightbulb-outline" slot="icon"></Icon>
         <template slot="desc">请点击商品前的选择框，选择购物车中的商品，点击付款即可。</template>
       </Alert>
-      <Table border ref="selection" :columns="columns" :data="shoppingCart" size="large" @on-selection-change="select" no-data-text="您的购物车没有商品，请先添加商品到购物车再点击购买"></Table>
+      <Table border ref="selection" :columns="columns" :data="datas" size="large" @on-selection-change="select" no-data-text="您的购物车没有商品，请先添加商品到购物车再点击购买"></Table>
       <div class="address-container">
         <h3>收货人信息</h3>
         <div class="address-box">
@@ -25,7 +25,7 @@
                 选择地址
                 <p slot="content">
                   <RadioGroup vertical size="large" @on-change="changeAddress">
-                    <Radio :label="item.addressId" v-for="(item, index) in address" :key="index">
+                    <Radio :label="item.id" v-for="(item, index) in  arrdata" :key="index">
                       <span>{{item.name}} {{item.province}} {{item.city}} {{item.address}} {{item.phone}} {{item.postalcode}}</span>
                     </Radio>
                   </RadioGroup>
@@ -67,9 +67,12 @@ export default {
   },
   created () {
     this.loadAddress();
+
   },
   data () {
     return {
+      datas:[],
+      arrdata:[],
       goodsCheckList: [],
       columns: [
         {
@@ -85,6 +88,7 @@ export default {
             return h('div', [
               h('img', {
                 attrs: {
+                  width:50,
                   src: params.row.img
                 }
               })
@@ -141,18 +145,34 @@ export default {
     },
     changeAddress (data) {
       const father = this;
-      this.address.forEach(item => {
-        if (item.addressId === data) {
+      this.arrdata.forEach(item => {
+        if (item.id === data) {
           father.checkAddress.name = item.name;
           father.checkAddress.address = `${item.name} ${item.province} ${item.city} ${item.address} ${item.phone} ${item.postalcode}`;
         }
       });
+    },
+    getqueryAll(){
+      let user=sessionStorage.getItem('loginInfo');
+      let userid=JSON.parse(user).username;
+      this.$ajax.post("http://localhost:20001/feigon/addres/queryByUserId?userid="+userid).then(res=>{
+
+        if(res.data.data.code==200){
+          this.arrdata=res.data.data.data;
+        }
+      })
     }
   },
   mounted () {
     setTimeout(() => {
       this.$refs.selection.selectAll(true);
     }, 500);
+  },
+  created(){
+    this.$ajax.post("http://localhost:20001/feigon/shop/getAttrByIdAll").then(rs=> {
+      this.datas=rs.data.data
+    })
+    this.getqueryAll();
   },
   components: {
     Search,

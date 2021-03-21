@@ -5,7 +5,7 @@
     <!-- 商品显示区域 -->
     <div class="content">
       <!-- 秒杀 -->
-      <div class="seckill">
+        <div class="seckill">
         <!-- 头部 -->
         <div class="seckill-head">
           <div class="seckill-icon">
@@ -42,7 +42,7 @@
         </div>
       </div>
       <!-- 电脑专场 -->
-      <div class="item-class">
+    <!--  <div class="item-class">
         <div class="item-class-head">
           <span class="item-class-title">{{computer.title}}</span>
           <ul>
@@ -80,9 +80,9 @@
             </div>
           </div>
         </div>
-      </div>
+      </div>-->
       <!-- 爱吃专场 -->
-      <div class="item-class">
+    <!--  <div class="item-class">
         <div class="item-class-head item-class-eat-head">
           <span class="item-class-title">{{eat.title}}</span>
           <ul>
@@ -118,7 +118,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div>-->
     </div>
   </div>
 </template>

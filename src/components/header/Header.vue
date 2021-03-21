@@ -129,8 +129,9 @@ export default {
       this.$router.push('/home');
     },
     signOutFun () {
+     //window.sessionStorage.clear();
       this.signOut();
-      this.$router.push('/');
+      this.$router.push('/Login');
     }
   },
   store

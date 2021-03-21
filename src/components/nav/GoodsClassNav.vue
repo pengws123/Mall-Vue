@@ -24,7 +24,7 @@ export default {
       tagsInfo: [
         {
           tagName: '品牌',
-          tags: [ '华为(HUAWEI)', '三星(SAMSUNG)', 'MATE', '摩斯维(msvii)', 'OPPO', '莫凡(Mofi)', '耐尔金(NILLKIN)', '洛克(ROCK)', '亿色(ESR)', 'Apple', '优加' ]
+          tags: [ /*'华为(HUAWEI)', '三星(SAMSUNG)', 'MATE', '摩斯维(msvii)', 'OPPO', '莫凡(Mofi)', '耐尔金(NILLKIN)', '洛克(ROCK)', '亿色(ESR)', 'Apple', '优加'*/ ]
         },
         {
           tagName: '手机配件',
@@ -40,6 +40,26 @@ export default {
         }
       ]
     };
+  },
+  methods:{
+    shangpin(){
+      this.$ajax.post("http://localhost:20001/feigon/barnd/getBarndAll").then(rs=>{
+
+              if(rs.data.data.code==200){
+                let arrDate=rs.data.data.data;
+                let arr=[];
+                for (let i = 0; i <arrDate.length ; i++) {
+                 arr =arrDate[i].name;
+                  this.tagsInfo[0].tags.push(arr);
+                }
+
+              }
+
+      })
+    }
+  },
+  created(){
+    this.shangpin();
   }
 };
 </script>

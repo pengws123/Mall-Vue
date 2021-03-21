@@ -7,7 +7,7 @@
             <div class="user-img">
               <img src="static/img/head.png">
             </div>
-            <p>Gavin</p>
+            <p>{{username}}</p>
           </div>
           <Submenu name="1">
             <template slot="title">
@@ -53,6 +53,7 @@ export default {
   name: 'Home',
   data () {
     return {
+      username:'',
       activeTitle: '我的订单',
       bar: {
         'myAddress': '我的收货地址',
@@ -67,6 +68,11 @@ export default {
       this.activeTitle = this.bar[name];
       this.$router.push(`/home/${name}`);
     }
+  },
+  created(){
+
+    let user=sessionStorage.getItem('loginInfo');
+    this.username=JSON.parse(user).username;
   }
 };
 </script>

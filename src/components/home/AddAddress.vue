@@ -24,7 +24,7 @@
         </Form>
       </div>
       <div class="add-submit">
-        <Button type="primary">添加地址</Button>
+        <Button type="primary" @click="handleSubmit">添加地址</Button>
       </div>
     </div>
   </div>
@@ -71,6 +71,15 @@ export default {
     },
     getArea (data) {
       this.formData.area = data.value;
+    },
+    handleSubmit(){
+      let user=sessionStorage.getItem('loginInfo');
+      this.formData.userid=JSON.parse(user).username;
+      this.$ajax.post("http://localhost:20001/feigon/addres/addaddres",this.$qs.stringify(this.formData)).then(res=>{
+        if(res.data.code==200){
+          this.$Message.success("添加完成");
+        }
+      })
     }
   },
   components: {

@@ -32,7 +32,7 @@ export default {
         ],
         checkNum: [
           { required: true, message: '必须填写验证码', trigger: 'blur' },
-          { type: 'string', min: 4, max: 4, message: '验证码长度错误', trigger: 'blur' }
+          { type: 'string', min: 2, max: 6, message: '验证码长度错误', trigger: 'blur' }
         ]
       }
     };
@@ -41,11 +41,36 @@ export default {
     ...mapMutations(['SET_SIGN_UP_SETP']),
     getcheckNum () {
       if (this.formValidate.phone.length === 11) {
-        this.$Message.success({
-          content: '验证码为: 1234',
-          duration: 6,
-          closable: true
-        });
+        this.$ajax.post("http://localhost:20001/feigon/user/yanzeng",this.$qs.stringify(this.formValidate)).then(res=>{
+          if(res.data.data.mage==2){
+            this.$Message.success({
+              content: '验证码已发送',
+              duration: 6,
+              closable: true
+            });
+          }
+          if(res.data.data.mage==1){
+            this.$Message.error({
+              content: '验证码发送失败,手机号格式不对',
+              duration: 6,
+              closable: true
+            });
+          }
+          if(res.data.data.mage==3){
+            this.$Message.error({
+              content: '手机号已使用',
+              duration: 6,
+              closable: true
+            });
+          }
+          if(res.data.data.mage==4){
+            this.$Message.error({
+              content: '请勿频繁发送',
+              duration: 6,
+              closable: true
+            });
+          }
+        })
       } else {
         this.$Message.error({
           content: '请输入正确的手机号',
@@ -57,8 +82,24 @@ export default {
     handleSubmit (name) { // 提交验证
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$router.push({ path: '/SignUp/inputInfo', query: { phone: this.formValidate.phone } });
+
+          this.$ajax.post("http://localhost:20001/feigon/user/jiaoyan",this.$qs.stringify(this.formValidate)).then(res=>{
+            if(res.data.code===200){
+              this.$Message.success({
+                content: '验证通过',
+                duration: 6,
+                closable: true
+              });
+            this.$router.push({ path: '/SignUp/inputInfo', query: { phone: this.formValidate.phone } });
           this.SET_SIGN_UP_SETP(1);
+          }else{
+              this.$Message.error({
+                content: '验证码错误或失效',
+                duration: 6,
+                closable: true
+              });
+            }
+          })
         } else {
           this.$Message.error({
             content: '请填写正确的信息',

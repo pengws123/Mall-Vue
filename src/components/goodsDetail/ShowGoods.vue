@@ -3,7 +3,7 @@
     <div class="item-detail-show">
       <div class="item-detail-left">
         <div class="item-detail-big-img">
-          <img :src="goodsInfo.goodsImg[imgIndex]" alt="">
+          <img :src="shop.imgpath" alt="">
         </div>
         <div class="item-detail-img-row">
           <div class="item-detail-img-small" v-for="(item, index) in goodsInfo.goodsImg" :key="index" @mouseover="showBigImg(index)">
@@ -14,7 +14,7 @@
       <div class="item-detail-right">
         <div class="item-detail-title">
           <p>
-            <span class="item-detail-express">校园配送</span> {{goodsInfo.title}}</p>
+            <span class="item-detail-express">校园配送</span> {{shop.title}}</p>
         </div>
         <div class="item-detail-tag">
           <p>
@@ -26,7 +26,7 @@
             <div class="item-price-row">
               <p>
                 <span class="item-price-title">B I T 价</span>
-                <span class="item-price">￥{{price.toFixed(2)}}</span>
+                <span class="item-price">￥{{shop.price.toFixed(2)}}</span>
               </p>
             </div>
             <div class="item-price-row">
@@ -57,10 +57,10 @@
             <p>选择颜色</p>
           </div>
           <div class="item-select-column">
-            <div class="item-select-row" v-for="(items, index) in goodsInfo.setMeal" :key="index">
+            <div class="item-select-row" v-for="(items, index) in SKU1" :key="index">
               <div class="item-select-box" v-for="(item, index1) in items" :key="index1" @click="select(index, index1)" :class="{'item-select-box-active': ((index * 3) + index1) === selectBoxIndex}">
                 <div class="item-select-img">
-                  <img :src="item.img" alt="">
+                  <img :src="shop.imgpath" alt="">
                 </div>
                 <div class="item-select-intro">
                   <p>{{item.intro}}</p>
@@ -85,7 +85,7 @@
         <br>
         <div class="add-buy-car-box">
           <div class="add-buy-car">
-            <InputNumber :min="1" v-model="count" size="large"></InputNumber>
+            <InputNumber :min="1" :max="shop.stocks" v-model="count" size="large"></InputNumber>
             <Button type="error" size="large" @click="addShoppingCartBtn()">加入购物车</Button>
           </div>
         </div>
@@ -101,10 +101,15 @@ export default {
   name: 'ShowGoods',
   data () {
     return {
+      AttrValeu:[],
+      Attr:[],
+      SKU1:[],
+      shop:{},
       price: 0,
       count: 1,
       selectBoxIndex: 0,
-      imgIndex: 0
+      imgIndex: 0,
+      id:''
     };
   },
   computed: {
@@ -147,25 +152,106 @@ export default {
     showBigImg (index) {
       this.imgIndex = index;
     },
-    addShoppingCartBtn () {
+    addShoppingCartBtn: function () {
       const index1 = parseInt(this.selectBoxIndex / 3);
       const index2 = this.selectBoxIndex % 3;
       const date = new Date();
       const goodsId = date.getTime();
       const data = {
-        goods_id: goodsId,
-        title: this.goodsInfo.title,
+        goods_id: this.shop.id,
+        title: this.shop.title,
         count: this.count,
-        package: this.goodsInfo.setMeal[index1][index2]
+        package: '',
+        skuid: ''
       };
+      if (this.SKU1[0].length > 0) {
+        data.package = this.SKU1[index1][index2];
+        data.skuid = this.SKU1[index1][index2].id;
+      }
       this.addShoppingCart(data);
-      this.$router.push('/shoppingCart');
-    }
+
+      const shopdata = {
+        id: data.goods_id,
+        title: this.shop.title,
+        count: data.count,
+        skuid: data.skuid
+      };
+      this.$ajax.post("http://localhost:20001/feigon/shop/gouwuche",this.$qs.stringify(shopdata)).then(rs=> {
+        if(rs.data.code==200){
+         this.$Message.success('添加成功');
+        this.$router.push('/shoppingCart');
+       }
+        if(rs.data.code==505){
+          this.$Message.error('库存不足');
+        }
+      })
+    //  console.log(shopdata);
+    },
+
+    queryAttrDate(){
+      this.$ajax.post("http://localhost:20001/feigon/shop/selectAttrByIdAll?id="+this.id).then(rs=> {
+        if (rs.data.data.code == 200) {
+          this.shop = rs.data.data.data.shop;
+        }
+      })
+      this.$ajax.post("http://localhost:20001/feigon/shop/selectAttrvalue?id=" + this.id).then(rs => {
+        if (rs.data.code == 200) {
+          let  addsku=[];
+          for (let i = 0; i <rs.data.data.length ; i++) {
+            addsku.push(rs.data.data[i]);
+            if((i+1)%3==0){
+            this.SKU1.push(addsku);
+              addsku=[];
+            }
+          }
+          this.SKU1.push(addsku);
+        }
+      })
+    },
+    /*queryAttrDate(){
+      this.$ajax.post("http://localhost:20001/feigon/shop/selectAttrByIdAll?id="+this.id).then(rs=>{
+        if(rs.data.data.code==200){
+          this.AttrValeu=rs.data.data.data.Attrvalue;
+          this.Attr=rs.data.data.data.list;
+          this.shop=rs.data.data.data.shop;
+          //this.id=rs.data.list.typeid;
+          console.log(this.Attr);
+         // console.log(this.shop);
+          this.SKU();
+        }
+
+      })
+    },
+    SKU(){
+      let arr=[];
+      let attrData={}
+      for (let i = 0; i <this.Attr.length ; i++) {
+        if(this.Attr[i].isSKU==1){
+          arr.push({nameCH:this.Attr[i].nameCH,value:[],values:""})
+          for (let j = 0; j <this.AttrValeu.length; j++) {
+            attrData=JSON.parse(this.AttrValeu[j].attrData)
+            if(this.AttrValeu[j].storcks!=null & attrData[this.Attr[i].name]!=undefined){
+              if((arr[i].value).indexOf(attrData[this.Attr[i].name])===-1){
+                arr[i].value.push(attrData[this.Attr[i].name])
+              }
+            }
+          }
+        }
+      }
+      this.SKU1=arr
+    }*/
+  },
+  created () {
+    this.id=this.$route.query.id;
+    //this.loadGoodsList();
+    this.queryAttrDate();
+
   },
   mounted () {
+
     const father = this;
     setTimeout(() => {
-      father.price = father.goodsInfo.setMeal[0][0].price || 0;
+      father.price = 0;
     }, 300);
   },
   store
